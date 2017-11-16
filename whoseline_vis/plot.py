@@ -18,10 +18,11 @@ https://github.com/bokeh/bokeh/blob/master/examples/app/sliders.py
 import numpy as np
 
 from bokeh.io import curdoc
-from bokeh.layouts import row, widgetbox, column
-from bokeh.models import ColumnDataSource, LabelSet, Slider, Dropdown, TextInput, RadioButtonGroup
+from bokeh.layouts import widgetbox, column
+from bokeh.models import ColumnDataSource, LabelSet, Slider
 from bokeh.plotting import figure
-from astropy.io import ascii
+
+from utils.io import read_file
 
 # Get data passed in from flask
 args = curdoc().session_context.request.arguments
@@ -31,20 +32,21 @@ line_list = next(iter(args.get('line_list', [''])), '')
 min_wave = float(next(iter(args.get('min_wave', [0.0])), 0.0))
 max_wave = float(next(iter(args.get('max_wave', [15000.0])), 150000))
 
-print(data_path, line_list, min_wave, max_wave)
-
 ##################################################################
 # Use our mocked API for whoseline
-import sys
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir,
+                                'whoseline'))
 from whoseline import query
 import astropy.units as u
 
 
 def render_plot():
     # Set up data
-    wavelength, flux = np.loadtxt(data_path.decode(), unpack=True)
+    spectrum = read_file(data_path.decode())
+    wavelength = spectrum.wavelength
+    flux = spectrum.flux
     flux /= flux.max()
-    N = len(wavelength)
 
     # Currently only implemented for table source "example"
     linelist = query(source=line_list.decode(),
@@ -77,29 +79,13 @@ def render_plot():
 
     # Add the actual spectrum
     plot.line('wavelength', 'flux', source=source, line_width=1, line_alpha=0.8)
-    # x_label='Wavelength [Angstrom]', y_label='Flux'
 
     # Set up widgets
     nlines_slider = Slider(title="more/less lines", value=10, start=0,
                            end=100, step=0.01)
 
-    # def on_text_change(attr, old, new):
-    #     try:
-    #         nlines_slider.value = new
-    #     except ValueError:
-    #         return
-
-    # nlines_text = TextInput(value=str(nlines_slider.value), title='more/less lines:')
-    # nlines_text.on_change('value', on_text_change)
-
     rv_offset = Slider(title="RV offset", value=0, start=-100,
                        end=100, step=0.01)
-
-    menu = [("Cool dwarf", "item_1"), ("Cool giant", "item_2"),
-            ("Quasar", "item_3"), ("Galaxy", "item_3")]
-    dropdown = Dropdown(label="Line list", button_type="success", menu=menu)
-    radio_button_group = RadioButtonGroup(labels=["Cool dwarf", "Cool giant",
-                                                  "Quasar", "Galaxy"], active=0)
 
     def on_slider_change(attrname, old, new):
         n_lines_scale = nlines_slider.value
@@ -113,8 +99,6 @@ def render_plot():
         # Blank out some labels
         label_names[~condition] = ''
 
-        # nlines_text.value = str(nlines_slider.value) #str(new)
-        print(label_wavelengths + rv_offset_val)
         lines.data = dict(x=label_wavelengths + rv_offset_val,
                           top=0.9*label_height*plot.y_range.end,
                           names=label_names)
@@ -123,12 +107,8 @@ def render_plot():
     for w in [nlines_slider, rv_offset]:
         w.on_change('value', on_slider_change)
 
-    # for w in [nlines_text]:
-    #     w.on_change('value', on_text_change)
-
-
     # Set up layouts and add to document
-    inputs = widgetbox(nlines_slider, rv_offset, radio_button_group)  #nlines_text
+    inputs = widgetbox(nlines_slider, rv_offset)  #nlines_text
     plot.add_layout(labels)
 
     curdoc().add_root(column(inputs, plot, height=1000))

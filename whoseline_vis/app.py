@@ -4,11 +4,16 @@ from bokeh.embed import server_document
 import numpy as np
 from werkzeug.utils import secure_filename
 from .forms import SpectrumUploadForm
+
+
+import sys, os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir,
+                                'whoseline'))
 from whoseline import linelist_paths
 
 
 UPLOAD_FOLDER = '/tmp/'
-ALLOWED_EXTENSIONS = set(['txt'])
+ALLOWED_EXTENSIONS = set(['txt', 'fits', 'csv'])
 
 app = Flask(__name__)
 app.secret_key = '\x14\x9a\xd3AZ\xc2\x15\xe7\xbf\x08\x8c\xdb\xea\x8c\xa8\n\xb6U\xf0\xc7\x95~\xc1W'
