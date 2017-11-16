@@ -33,7 +33,7 @@ def read_file(path, wavelength_key='wavelength', flux_key='flux'):
         wavelength=fitsrec[wavelength_key]
         flux=fitsrec[flux_key]
 
-    elif ext.lower() == 'csv':
+    elif ext.lower() == 'csv' or ext.lower() == 'txt':
         data = np.loadtxt(path)
         wavelength, flux = data[:, 0], data[:, 1]
     else:
