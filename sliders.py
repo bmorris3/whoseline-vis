@@ -29,7 +29,7 @@ flux /= flux.max()
 N = len(wavelength)
 
 # Load VALD3 line list
-from whoseline.lines import vald3_path
+from whoselinevis.lines import vald3_path
 table = ascii.read(vald3_path)
 
 table_min_wavelength = table['wavelengths'].min()
@@ -122,3 +122,5 @@ plot.add_layout(labels)
 
 curdoc().add_root(column(inputs, plot, height=1000))
 curdoc().title = "Whose line is it anyway"
+
+
