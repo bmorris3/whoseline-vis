@@ -1,10 +1,7 @@
 import os
-from flask import Flask, render_template, request, redirect, flash, url_for
+from flask import Flask, render_template, request, redirect, flash
 from bokeh.embed import server_document
-import numpy as np
 from werkzeug.utils import secure_filename
-from .forms import SpectrumUploadForm
-
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir,
@@ -31,7 +28,6 @@ def index():
     script = None
 
     if request.method == 'POST':
-        print(request.form)
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file part')
