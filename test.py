@@ -1,1 +1,1 @@
-from whoseline import interactive_plot
+from whoseline_vis import interactive_plot

@@ -29,7 +29,7 @@ flux /= flux.max()
 N = len(wavelength)
 
 # Load VALD3 line list
-from whoseline.lines import vald3_path
+from whoseline_vis.lines import vald3_path
 table = ascii.read(vald3_path)
 
 table_min_wavelength = table['wavelengths'].min()
