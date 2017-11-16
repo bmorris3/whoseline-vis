@@ -17,7 +17,6 @@ setup(
         "certifi==2017.7.27.1",
         "click==6.7",
         "Flask==0.12.2",
-        "Flask-WTF==0.14.2",
         "itsdangerous==0.24",
         "Jinja2==2.10",
         "MarkupSafe==1.0",
@@ -31,7 +30,6 @@ setup(
         "six==1.11.0",
         "tornado==4.5.2",
         "Werkzeug==0.12.2",
-        "whoseline==0.1.dev27",
-        "WTForms==2.1"
+        "whoseline==0.1.dev27"
     ]
 )
