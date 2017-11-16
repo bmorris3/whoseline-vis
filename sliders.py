@@ -28,25 +28,29 @@ wavelength, flux = np.loadtxt('data/sample_spectrum.txt', unpack=True)
 flux /= flux.max()
 N = len(wavelength)
 
-# Load VALD3 line list
-from whoselinevis.lines import vald3_path
-table = ascii.read(vald3_path)
+##################################################################
+# Use our mocked API for whoseline
+import sys
+sys.path.insert(0, 'whoseline')
 
-table_min_wavelength = table['wavelengths'].min()
-table_max_wavelength = table['wavelengths'].max()
+from whoseline import query
+import astropy.units as u
 
-wl_bounds = [wavelength.min(), wavelength.max()]
-rows_within_bounds = ((table['wavelengths'] > wl_bounds[0]) &
-                      (table['wavelengths'] < wl_bounds[1]))
-strengths_within_bounds = table[rows_within_bounds]['strengths']
+# Currently only implemented for table source "example"
+source = 'example'
+
+linelist = query(source='example',
+                 wavelength_min=wavelength.min() * u.Angstrom,
+                 wavelength_max=wavelength.max() * u.Angstrom)
+##################################################################
 
 # Create object spectrum data source
 source = ColumnDataSource(data=dict(wavelength=wavelength, flux=flux))
 
 # Create line list label source
-lines = ColumnDataSource(data=dict(x=table['wavelengths'][rows_within_bounds].data,
-                                   top=np.zeros_like(table['wavelengths'][rows_within_bounds].data),
-                                   names=table['species'][rows_within_bounds].data))
+lines = ColumnDataSource(data=dict(x=linelist.wavelength.value,
+                                   top=np.zeros_like(linelist.priority),
+                                   names=linelist.species))
 
 # Create a set of labels for each species
 labels = LabelSet(x='x', y='top', text='names', level='glyph',
@@ -89,21 +93,20 @@ dropdown = Dropdown(label="Line list", button_type="success", menu=menu)
 radio_button_group = RadioButtonGroup(labels=["Cool dwarf", "Cool giant",
                                               "Quasar", "Galaxy"], active=0)
 
-
 def on_slider_change(attrname, old, new):
     n_lines_scale = nlines_slider.value
     rv_offset_val = rv_offset.value
-    n_lines = int(n_lines_scale/100 * len(strengths_within_bounds))
-    condition = strengths_within_bounds >= np.sort(strengths_within_bounds)[-n_lines]
-    label_wavelengths = table['wavelengths'][rows_within_bounds]
+    n_lines = int(n_lines_scale/100 * len(linelist.wavelength))
+    condition = linelist.priority >= np.sort(linelist.priority)[-n_lines]
+    label_wavelengths = linelist.wavelength.value
     label_height = condition.astype(float) * flux.max()
 
-    label_names = table['species'][rows_within_bounds].data.copy()
+    label_names = linelist.species.copy()
     # Blank out some labels
     label_names[~condition] = ''
 
     # nlines_text.value = str(nlines_slider.value) #str(new)
-
+    print(label_wavelengths + rv_offset_val)
     lines.data = dict(x=label_wavelengths + rv_offset_val,
                       top=0.9*label_height*plot.y_range.end,
                       names=label_names)
