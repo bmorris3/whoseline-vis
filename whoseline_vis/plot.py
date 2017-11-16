@@ -1,72 +1,127 @@
-''' Present an interactive function explorer with slider widgets.
-Scrub the sliders to change the properties of the ``sin`` curve, or
-type into the title text box to update the title of the plot.
+"""
+Present an interactive spectrum explorer with slider widgets.
+
 Use the ``bokeh serve`` command to run the example by executing:
+
     bokeh serve sliders.py
+
 at your command prompt. Then navigate to the URL
-    http://localhost:5006/sliders
+
+    http://localhost:5006/slider
+
 in your browser.
-'''
+
+Built from example:
+https://github.com/bokeh/bokeh/blob/master/examples/app/sliders.py
+"""
+
 import numpy as np
 
 from bokeh.io import curdoc
-from bokeh.layouts import row, widgetbox
-from bokeh.models import ColumnDataSource
-from bokeh.models.widgets import Slider, TextInput
+from bokeh.layouts import row, widgetbox, column
+from bokeh.models import ColumnDataSource, LabelSet, Slider, Dropdown, TextInput, RadioButtonGroup
 from bokeh.plotting import figure
-
-# Get arguments
-args = curdoc().session_context.request.arguments
+from astropy.io import ascii
 
 # Set up data
-N = 200
-x = np.linspace(0, int(args.get('mult', [0])[0])*np.pi, N)
-y = np.sin(x)
-source = ColumnDataSource(data=dict(x=x, y=y))
+wavelength, flux = np.loadtxt('data/sample_spectrum.txt', unpack=True)
+flux /= flux.max()
+N = len(wavelength)
 
+##################################################################
+# Use our mocked API for whoseline
+import sys
+sys.path.insert(0, 'whoseline')
+
+from whoseline import query
+import astropy.units as u
+
+# Currently only implemented for table source "example"
+source = 'example'
+
+linelist = query(source='example',
+                 wavelength_min=wavelength.min() * u.Angstrom,
+                 wavelength_max=wavelength.max() * u.Angstrom)
+##################################################################
+
+# Create object spectrum data source
+source = ColumnDataSource(data=dict(wavelength=wavelength, flux=flux))
+
+# Create line list label source
+lines = ColumnDataSource(data=dict(x=linelist.wavelength.value,
+                                   top=np.zeros_like(linelist.priority),
+                                   names=linelist.species))
+
+# Create a set of labels for each species
+labels = LabelSet(x='x', y='top', text='names', level='glyph',
+                  x_offset=0, y_offset=0, source=lines, render_mode='canvas',
+                  angle=np.pi/3)
 
 # Set up plot
-plot = figure(plot_height=400, plot_width=400, title="my sine wave",
-              tools="crosshair,pan,reset,save,wheel_zoom",
-              x_range=[0, 4*np.pi], y_range=[-2.5, 2.5])
+plot = figure(plot_height=600, plot_width=800, title="Example spectrum",
+              tools="wheel_zoom,box_zoom,pan,reset,save",
+              x_range=[wavelength.min(), wavelength.max()],
+              y_range=[0, flux.max()])
 
-plot.line('x', 'y', source=source, line_width=3, line_alpha=0.6)
+# Add vertical bars for each line in the line list
+plot.vbar(x='x', top='top', source=lines,
+          color="black", width=0.01, bottom=0, alpha=0.5)
 
+# Add the actual spectrum
+plot.line('wavelength', 'flux', source=source, line_width=1, line_alpha=0.8)
+# x_label='Wavelength [Angstrom]', y_label='Flux'
 
 # Set up widgets
-text = TextInput(title="title", value='my sine wave')
-offset = Slider(title="offset", value=0.0, start=-5.0, end=5.0, step=0.1)
-amplitude = Slider(title="amplitude", value=1.0, start=-5.0, end=5.0)
-phase = Slider(title="phase", value=0.0, start=0.0, end=2*np.pi)
-freq = Slider(title="frequency", value=1.0, start=0.1, end=5.1)
+nlines_slider = Slider(title="more/less lines", value=10, start=0,
+                       end=100, step=0.01)
+
+# def on_text_change(attr, old, new):
+#     try:
+#         nlines_slider.value = new
+#     except ValueError:
+#         return
+
+# nlines_text = TextInput(value=str(nlines_slider.value), title='more/less lines:')
+# nlines_text.on_change('value', on_text_change)
+
+rv_offset = Slider(title="RV offset", value=0, start=-100,
+                   end=100, step=0.01)
+
+menu = [("Cool dwarf", "item_1"), ("Cool giant", "item_2"),
+        ("Quasar", "item_3"), ("Galaxy", "item_3")]
+dropdown = Dropdown(label="Line list", button_type="success", menu=menu)
+radio_button_group = RadioButtonGroup(labels=["Cool dwarf", "Cool giant",
+                                              "Quasar", "Galaxy"], active=0)
+
+def on_slider_change(attrname, old, new):
+    n_lines_scale = nlines_slider.value
+    rv_offset_val = rv_offset.value
+    n_lines = int(n_lines_scale/100 * len(linelist.wavelength))
+    condition = linelist.priority >= np.sort(linelist.priority)[-n_lines]
+    label_wavelengths = linelist.wavelength.value
+    label_height = condition.astype(float) * flux.max()
+
+    label_names = linelist.species.copy()
+    # Blank out some labels
+    label_names[~condition] = ''
+
+    # nlines_text.value = str(nlines_slider.value) #str(new)
+    print(label_wavelengths + rv_offset_val)
+    lines.data = dict(x=label_wavelengths + rv_offset_val,
+                      top=0.9*label_height*plot.y_range.end,
+                      names=label_names)
 
 
-# Set up callbacks
-def update_title(attrname, old, new):
-    plot.title.text = text.value
+for w in [nlines_slider, rv_offset]:
+    w.on_change('value', on_slider_change)
 
-text.on_change('value', update_title)
-
-def update_data(attrname, old, new):
-
-    # Get the current slider values
-    a = amplitude.value
-    b = offset.value
-    w = phase.value
-    k = freq.value
-
-    # Generate the new curve
-    x = np.linspace(0, 4*np.pi, N)
-    y = a*np.sin(k*x + w) + b
-
-    source.data = dict(x=x, y=y)
-
-for w in [offset, amplitude, phase, freq]:
-    w.on_change('value', update_data)
+# for w in [nlines_text]:
+#     w.on_change('value', on_text_change)
 
 
 # Set up layouts and add to document
-inputs = widgetbox(text, offset, amplitude, phase, freq)
+inputs = widgetbox(nlines_slider, rv_offset, radio_button_group)  #nlines_text
+plot.add_layout(labels)
 
-curdoc().add_root(row(inputs, plot, width=800))
-curdoc().title = "Sliders"
+curdoc().add_root(column(inputs, plot, height=1000))
+curdoc().title = "Whose line is it anyway"
