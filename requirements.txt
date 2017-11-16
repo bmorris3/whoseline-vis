@@ -1,1 +1,2 @@
 -e .
+-e git+git://github.com/bmorris3/whoseline.git#egg=whoseline
