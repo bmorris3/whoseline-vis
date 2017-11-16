@@ -1,0 +1,3 @@
+include data/*
+recursive-include whoseline_vis/static *
+recursive-include whoseline_vis/templates *

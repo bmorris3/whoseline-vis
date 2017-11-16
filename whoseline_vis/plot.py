@@ -31,8 +31,6 @@ line_list = next(iter(args.get('line_list', [''])), '')
 min_wave = float(next(iter(args.get('min_wave', [0.0])), 0.0))
 max_wave = float(next(iter(args.get('max_wave', [15000.0])), 150000))
 
-print(data_path, line_list, min_wave, max_wave)
-
 ##################################################################
 # Use our mocked API for whoseline
 import sys
