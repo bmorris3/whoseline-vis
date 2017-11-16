@@ -91,8 +91,8 @@ def modify_doc(doc):
     # nlines_text = TextInput(value=str(nlines_slider.value), title='more/less lines:')
     # nlines_text.on_change('value', on_text_change)
 
-    rv_offset = Slider(title="RV offset", value=0, start=-100,
-                       end=100, step=0.01)
+    rv_offset = Slider(title="RV offset", value=0, start=-100*np.random.rand(),
+                       end=100*np.random.rand(), step=0.01)
 
     menu = [("Cool dwarf", "item_1"), ("Cool giant", "item_2"),
             ("Quasar", "item_3"), ("Galaxy", "item_3")]
