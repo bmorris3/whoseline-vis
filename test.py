@@ -1,1 +1,0 @@
-from whoseline_vis import interactive_plot

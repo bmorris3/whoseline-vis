@@ -2,5 +2,35 @@
 
 {% block content %}
     <h1>Whose Line is it Anyway?</h1>
+
+    <form action="/" method="POST" enctype="multipart/form-data">
+
+        <div class="form-group">
+            <label for="exampleFormControlSelect1">Select line list</label>
+            <select class="form-control" id="spectrum-select" name="specSelect">
+                {% for obj in linelists %}
+                    <option>{{ obj }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-row">
+        <div class="form-group col-md-6">
+          <label for="wave-min">Minimum Wavelength</label>
+          <input type="number" class="form-control" id="wave-min" value="3927" name="waveMin">
+        </div>
+        <div class="form-group col-md-6">
+          <label for="wave-max">Maximum Wavelength</label>
+          <input type="number" class="form-control" id="wave-max" value="3996" name="waveMax">
+        </div>
+      </div>
+
+        <div class="form-group">
+            <label for="spec-upload">Upload spectrum</label>
+            <input type=file id="spec-upload" name="file">
+        </div>
+
+        <input type=submit class="btn btn-default" value="Upload">
+    </form>
     {{ plot_script|safe }}
 {% endblock %}
