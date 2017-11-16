@@ -64,10 +64,10 @@ def render_plot():
                       angle=np.pi/3)
 
     # Set up plot
-    plot = figure(plot_height=600, plot_width=800, title="Example spectrum",
+    plot = figure(plot_height=600, plot_width=700, title="Example spectrum",
                   tools="wheel_zoom,box_zoom,pan,reset,save",
                   x_range=[wavelength.min(), wavelength.max()],
-                  y_range=[0, flux.max()])
+                  y_range=[0, flux.max()], responsive=True)
 
     # Add vertical bars for each line in the line list
     plot.vbar(x='x', top='top', source=lines,

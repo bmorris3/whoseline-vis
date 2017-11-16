@@ -21,6 +21,6 @@ setup(
         "six"
     ],
     entry_points = {
-        'console_scripts': ['wlv=whoseline_vis.__init__:start'],
+        'console_scripts': ['wla=whoseline_vis.__init__:start'],
     }
 )
