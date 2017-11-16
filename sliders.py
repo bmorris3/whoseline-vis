@@ -3,7 +3,7 @@ Present an interactive spectrum explorer with slider widgets.
 
 Use the ``bokeh serve`` command to run the example by executing:
 
-    bokeh serve slider.py
+    bokeh serve sliders.py
 
 at your command prompt. Then navigate to the URL
 
