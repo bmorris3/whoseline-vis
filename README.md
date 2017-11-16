@@ -11,3 +11,6 @@ and in another terminal, run:
 ```bokeh
 python run.py
 ```
+While those two processes are running, open http://127.0.0.1:8000/ in a web browser. 
+
+Then celebrate! 💃
