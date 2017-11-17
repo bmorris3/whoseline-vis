@@ -1,15 +1,8 @@
-from whoseline_vis.app import app
+from .app import app, host, remote_port, app_port
 from tornado import wsgi, httpserver, ioloop, autoreload
-import threading
 from bokeh.server.server import Server
 from bokeh.command.util import build_single_handler_applications
-import subprocess
 import os
-
-
-host = '127.0.0.1'
-app_port = 8000
-bokeh_port = 6060
 
 
 def run_bokeh_server(bok_io_loop):
@@ -26,7 +19,7 @@ def run_bokeh_server(bok_io_loop):
         # 'host':['%s:%d' % (host,app_port),'%s:%d' % (host,bokeh_port)],
         # 'port': bokeh_port,
         # 'use_index': True,
-        'allow_websocket_origin': ['%s:%d' % (host, app_port)]
+        'allow_websocket_origin': ['%s:%d' % (host, remote_port)]
     }
     srv = Server(apps, **kwargs)
 
@@ -42,7 +35,7 @@ def start():
 
     # add the io_loop to the bokeh server
     run_bokeh_server(io_loop)
-    print('starting the server on http://{}:{}/'.format(host, app_port))
+    print('Starting the server on http://{}:{}/'.format(host, app_port))
 
     # run the bokeh server
     io_loop.start()
