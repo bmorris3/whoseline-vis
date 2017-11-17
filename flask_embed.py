@@ -35,8 +35,14 @@ import astropy.units as u
 app = Flask(__name__)
 
 def modify_doc(doc):
+    
+    data_location_a = 'data/sample_spectrum.txt'
+    data_location_b = 'data/sample_spectrum_alternate.txt'
+    
+    data_location = np.choice([data_location_a, data_location_b])
+    
     # Set up data
-    wavelength, flux = np.loadtxt('data/sample_spectrum.txt', unpack=True)
+    wavelength, flux = np.loadtxt(data_location, unpack=True)
     flux /= flux.max()
     N = len(wavelength)
 
