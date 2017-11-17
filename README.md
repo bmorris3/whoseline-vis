@@ -1,6 +1,6 @@
 # whoseline-vis
 
-Whose line is it anyway? A simple Python package for identifying spectral lines
+Whose line is it anyway? A Python package for identifying spectral lines, with flask+bokeh!
 
 # How to run a local instance of `whoseline-vis`
 In a terminal, clone the `whoseline-vis` repository like so: 
