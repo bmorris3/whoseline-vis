@@ -27,10 +27,10 @@ from utils.io import read_file
 # Get data passed in from flask
 args = curdoc().session_context.request.arguments
 
-data_path = next(iter(args.get('data_path', [''])), '')
-line_list = next(iter(args.get('line_list', [''])), '')
-min_wave = float(next(iter(args.get('min_wave', [0.0])), 0.0))
-max_wave = float(next(iter(args.get('max_wave', [15000.0])), 150000))
+data_path = args.get('data_path', [b''])[0]
+line_list = args.get('line_list', [b'arcturus'])[0]
+min_wave = float(args.get('min_wave', [0.0])[0])
+max_wave = float(args.get('max_wave', [15000.0])[0])
 
 ##################################################################
 # Use our mocked API for whoseline
@@ -43,10 +43,14 @@ import astropy.units as u
 
 def render_plot():
     # Set up data
-    spectrum = read_file(data_path.decode())
-    wavelength = spectrum.wavelength
-    flux = spectrum.flux
-    flux /= flux.max()
+    if data_path == b'':
+        wavelength = np.arange(3900, 4000)
+        flux = np.random.sample(100)
+    else:
+        spectrum = read_file(data_path.decode())
+        wavelength = spectrum.wavelength
+        flux = spectrum.flux
+        flux /= flux.max()
 
     # Currently only implemented for table source "example"
     linelist = query(source=line_list.decode(),
@@ -71,7 +75,7 @@ def render_plot():
     plot = figure(plot_height=600, plot_width=700, title="Example spectrum",
                   tools="wheel_zoom,box_zoom,pan,reset,save",
                   x_range=[wavelength.min(), wavelength.max()],
-                  y_range=[0, flux.max()], responsive=True)
+                  y_range=[0, flux.max()], sizing_mode='scale_width')
 
     # Add vertical bars for each line in the line list
     plot.vbar(x='x', top='top', source=lines,

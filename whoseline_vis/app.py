@@ -9,6 +9,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), os.pardir,
 from whoseline import linelist_paths
 
 
+if os.getenv('USER') == 'dotastro':
+    host = 'dotastro.muna.net'
+    remote_port = 5006
+else:
+    host = '127.0.0.1'
+    remote_port = 8000
+
+app_port = 8000
+
 UPLOAD_FOLDER = '/tmp/'
 ALLOWED_EXTENSIONS = set(['txt', 'fits', 'csv'])
 
@@ -45,7 +54,7 @@ def index():
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
 
-            script = server_document("http://localhost:5006/plot",
+            script = server_document("http://{}:{}/plot".format(host, 5006),
                                      arguments={
                                          'data_path': file_path,
                                          'line_list': request.form['specSelect'],
