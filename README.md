@@ -3,14 +3,19 @@
 Whose line is it anyway? A simple Python package for identifying spectral lines
 
 # How to run a local instance of `whoseline-vis`
-In one terminal, go to the `whoseline-vis` repository, and run:
+In a terminal, clone the `whoseline-vis` repository like so: 
 ```bash
-bokeh serve whoseline_vis/plot.py --allow-websocket-origin=127.0.0.1:8000
+git clone --recursive https://github.com/bmorris3/whoseline-vis
 ```
-and in another terminal, run: 
-```bokeh
-python run.py
+`cd` into that repo, run
+```bash
+pip install . -r requirements.txt
 ```
-While those two processes are running, open http://127.0.0.1:8000/ in a web browser. 
+to install the package. 
+
+To start a local instance of the server with our console script, run: 
+```bash
+wla
+```
 
 Then celebrate! 💃
